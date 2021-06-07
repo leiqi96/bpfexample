@@ -27,7 +27,8 @@ To build simply run **make** and run the resulting **libbpfgo-prog** binary.
 # Issue
 
 1. When I execute this command "chmod 777 filepath", I don't get any output, so I might have to look at the chmod code to find out why
-
+-----------
+chmod command is use fchmodat function
 
 
 

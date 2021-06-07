@@ -7,7 +7,7 @@
 typedef struct process_info {
     u32 pid_ns;
     u32 pid;
-    umode_t mode;
+    int mode;
     char comm[TASK_COMM_LEN];
     char fname[NAME_MAX]; 
 } proc_info;
@@ -49,7 +49,32 @@ int tracepoint__syscalls__sys_enter_chmod(struct trace_event_raw_sys_enter* ctx)
     bpf_get_current_comm(&process->comm, sizeof(process->comm));
 
     bpf_probe_read_user_str(&process->fname, sizeof(process->fname), (const char *)ctx->args[0]);
-    process->mode = (umode_t)ctx->args[1];
+    process->mode = (int)ctx->args[1];
+    
+    bpf_ringbuf_submit(process, ringbuffer_flags);
+
+    return 0;
+}
+
+
+SEC("tracepoint/syscalls/sys_enter_fchmodat")
+int tracepoint__syscalls__sys_enter_fchmodat(struct trace_event_raw_sys_enter* ctx){    
+    u64 id = bpf_get_current_pid_tgid();
+    u32 pid = id >> 32;
+    struct task_struct *task = (struct task_struct *)bpf_get_current_task();
+    u32 pid_ns = get_task_pid_ns_id(task);
+    proc_info *process;
+    process = bpf_ringbuf_reserve(&events, sizeof(proc_info), ringbuffer_flags);
+    if (!process) {
+        return 0;
+    }
+
+    process->pid_ns = pid_ns;
+    process->pid = pid;
+    bpf_get_current_comm(&process->comm, sizeof(process->comm));
+
+    bpf_probe_read_user_str(&process->fname, sizeof(process->fname), (const char *)ctx->args[1]);
+    process->mode = (int)ctx->args[2];
     
     bpf_ringbuf_submit(process, ringbuffer_flags);
 
