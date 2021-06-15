@@ -30,12 +30,12 @@ func main() {
 		os.Exit(-1)
 	}
 
-	prog2, err := bpfModule.GetProgram("tracepoint__syscalls__sys_enter_fchmod")
+	prog2, err := bpfModule.GetProgram("tracepoint__syscalls__sys_enter_fchmodat")
 	if err != nil {
 		os.Exit(-1)
 	}
 
-	_, err = prog2.AttachTracepoint("syscalls:sys_enter_fchmod")
+	_, err = prog2.AttachTracepoint("syscalls:sys_enter_fchmodat")
 	if err != nil {
 		os.Exit(-1)
 	}
