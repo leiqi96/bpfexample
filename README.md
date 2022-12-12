@@ -20,7 +20,7 @@ To build simply run **make** and run the resulting **libbpfgo-prog** binary.
 
 ```
 # ./libbpfgo-prog
-4026531836 3771110 chmod /root/a.txt 0777
+4026532391 3771110 chmod /root/a.txt 0777
 4026531836 3771404 python3 /var/log/ubuntu-advantage.log 0600
 ```
 
