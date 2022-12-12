@@ -1,9 +1,9 @@
 # Prerequisite
 
- Ubuntu 21.04 (GNU/Linux 5.11.0-18-generic x86_64)
+  Ubuntu 21.10 (5.13.0-52-generic)
 
 ```
-apt install build-essential libelf-dev  libbpf-dev 
+apt install build-essential libelf-dev 
 apt install clang
 apt install llvm
 ```
@@ -19,16 +19,12 @@ To build simply run **make** and run the resulting **libbpfgo-prog** binary.
 # output
 
 ```
-4026531836 11738 420 apt-get /var/lib/apt/lists/cn.archive.ubuntu.com_ubuntu_dists_hirsute-security_InRelease
+# ./libbpfgo-prog
+4026531836 3771110 chmod /root/a.txt 0777
+4026531836 3771404 python3 /var/log/ubuntu-advantage.log 0600
 ```
 
 
-
-# Issue
-
-1. When I execute this command "chmod 777 filepath", I don't get any output, so I might have to look at the chmod code to find out why
------------
-chmod command is use fchmodat function
 
 
 
