@@ -48,12 +48,6 @@ typedef struct simple_buf {
 MAP_ARRAY(path_buf, buf_t, 1, 0);
 
 
-// static __always_inline buf_t* get_buf(int idx)
-// {
-//     return bpf_map_lookup_elem(&bufs, &idx);
-// }
-
-
 struct {
     __uint(type, BPF_MAP_TYPE_RINGBUF);
     __uint(max_entries, 1 << 24);
@@ -92,51 +86,6 @@ static __always_inline struct dentry* get_dentry_ptr_from_fd(struct task_struct 
     struct path f_path  = READ_KERN(file_array[fd]->f_path);
     return READ_KERN(f_path.dentry);
 }
-
-
-
-// static __always_inline int save_dentry_path_to_str_buf(struct dentry* dentry, char *buf, int buflen )
-// {
-//     char slash = '/';
-//     int zero = 0;
-
-//     char *end = buf + buflen;
-//     struct qstr dentry_name = get_d_name_from_dentry(dentry);
-//     unsigned int len = dentry_name.len;
-//     unsigned int off = buflen - len;
-//     if(off<0){
-//         return off;
-//     }
-//     char *start = end - len;
-//     bpf_probe_read(start,len,(void *)dentry_name.name);
-
-//     #pragma unroll
-//     // As bpf loops are not allowed and max instructions number is 4096, path components is limited to 30
-//     for (int i = 0; i < 29; i++) {
-//         struct dentry *d_parent = get_d_parent_ptr_from_dentry(dentry);
-//         if (dentry == d_parent) {
-//             break;
-//         }
-//         // Add this dentry name to path
-//         struct qstr d_name = get_d_name_from_dentry(dentry);
-//         len = d_name.len;
-//         off = buflen - len - 1;
-//         // Is string buffer big enough for dentry name?
-//         if(off<0){
-//             break;
-//         }else{
-//             start = (start - 1);
-//             bpf_probe_read(start,1,&slash);
-//             start = start - len;
-//             bpf_probe_read(start,len,(void *)dentry_name.name);
-//         }
-//         dentry = d_parent;
-//     }
-
-//     bpf_probe_read(buf,buflen-off,start);
-
-//     return off;
-// }
 
 
 SEC("tracepoint/syscalls/sys_enter_chmod")
@@ -180,20 +129,8 @@ int tracepoint__syscalls__sys_enter_fchmodat(struct trace_event_raw_sys_enter* c
     process->pid = pid;
     bpf_get_current_comm(&process->comm, sizeof(process->comm));
 
-    // int fd = (int)ctx->args[0];
-    // if (fd == AT_FDCWD){
-        bpf_probe_read_user_str(&process->fname, sizeof(process->fname), (const char *)ctx->args[1]);
-    // }else{
-    //     int idx = 0;
-    //     buf_t *string_p = bpf_map_lookup_elem(&path_buf, &idx);
-    //     struct dentry *dentry_ptr = get_dentry_ptr_from_fd(task,fd);
-    //     int off = save_dentry_path_to_str_buf(dentry_ptr,string_p->buf,NAME_MAX);
-    //     if(off){
-    //         char *start = string_p->buf + (NAME_MAX-off);   
-    //         bpf_probe_read_user_str(start, off, (const char *)ctx->args[1]);
-    //     }
-    //     bpf_probe_read(&process->fname,NAME_MAX,string_p->buf);
-    // }
+
+    bpf_probe_read_user_str(&process->fname, sizeof(process->fname), (const char *)ctx->args[1]);
     process->mode = (int)ctx->args[2];
     
     bpf_ringbuf_submit(process, ringbuffer_flags);
