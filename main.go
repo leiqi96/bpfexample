@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"os"
 
-	bpf "github.com/aquasecurity/tracee/libbpfgo"
+	bpf "github.com/aquasecurity/libbpfgo"
 )
 
 func main() {
 
-	bpfModule, err := bpf.NewModuleFromFile("simplebpf.o")
+	bpfModule, err := bpf.NewModuleFromFile("simple.bpf.o")
 	if err != nil {
 		os.Exit(-1)
 	}
@@ -25,7 +25,7 @@ func main() {
 		os.Exit(-1)
 	}
 
-	_, err = prog.AttachTracepoint("syscalls:sys_enter_chmod")
+	_, err = prog.AttachTracepoint("syscalls", "sys_enter_chmod")
 	if err != nil {
 		os.Exit(-1)
 	}
@@ -35,11 +35,10 @@ func main() {
 		os.Exit(-1)
 	}
 
-	_, err = prog2.AttachTracepoint("syscalls:sys_enter_fchmodat")
+	_, err = prog2.AttachTracepoint("syscalls", "sys_enter_fchmodat")
 	if err != nil {
 		os.Exit(-1)
 	}
-
 
 	eventsChannel := make(chan []byte)
 	rb, err := bpfModule.InitRingBuf("events", eventsChannel)
@@ -54,9 +53,9 @@ func main() {
 		pid_ns := int(binary.LittleEndian.Uint32(event[0:4]))
 		pid := int(binary.LittleEndian.Uint32(event[4:8]))
 		mode := uint16(binary.LittleEndian.Uint16(event[8:12]))
-		comm := string(event[12:28]) 
+		comm := string(event[12:28])
 		filename := string(bytes.TrimRight(event[28:], "\x00"))
-		fmt.Printf("%d %d %d %v %v\n", pid_ns,pid, mode, comm,filename)
+		fmt.Printf("%d %d %v %v %04o\n", pid_ns, pid, comm, filename, mode)
 
 	}
 

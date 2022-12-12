@@ -1,8 +1,5 @@
-module github.com/grantseltzer/libbpfgoexample
+module bpfexample
 
-go 1.15
+go 1.18
 
-require (
-	github.com/aquasecurity/tracee/libbpfgo v0.0.0-20210308231044-6b6a8d6ac59a
-	golang.org/x/tools/gopls v0.6.6 // indirect
-)
+require github.com/aquasecurity/libbpfgo v0.4.4-libbpf-1.0.1
